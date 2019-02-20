@@ -1,7 +1,7 @@
 <?php
 
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Absolvent\GraphQL\Support\Type as GraphQLType;
 
 class CustomExampleType extends GraphQLType
 {

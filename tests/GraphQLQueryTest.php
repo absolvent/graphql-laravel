@@ -4,7 +4,7 @@ use GraphQL\Type\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Error\Error;
-use Rebing\GraphQL\Error\ValidationError;
+use Absolvent\GraphQL\Error\ValidationError;
 
 class GraphQLQueryTest extends TestCase
 {

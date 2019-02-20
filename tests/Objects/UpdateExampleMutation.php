@@ -1,7 +1,7 @@
 <?php
 
-use Rebing\GraphQL\Support\Facades\GraphQL;
-use Rebing\GraphQL\Support\Mutation;
+use Absolvent\GraphQL\Support\Facades\GraphQL;
+use Absolvent\GraphQL\Support\Mutation;
 use GraphQL\Type\Definition\Type;
 
 class UpdateExampleMutation extends Mutation

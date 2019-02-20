@@ -1,6 +1,6 @@
 <?php
 
-use Rebing\GraphQL\Support\Privacy;
+use Absolvent\GraphQL\Support\Privacy;
 use Auth;
 
 class MePrivacy extends Privacy {

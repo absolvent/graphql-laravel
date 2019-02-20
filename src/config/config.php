@@ -37,11 +37,11 @@ return [
     // Example:
     //
     // 'controllers' => [
-    //     'query' => '\Rebing\GraphQL\GraphQLController@query',
-    //     'mutation' => '\Rebing\GraphQL\GraphQLController@mutation'
+    //     'query' => '\Absolvent\GraphQL\GraphQLController@query',
+    //     'mutation' => '\Absolvent\GraphQL\GraphQLController@mutation'
     // ]
     //
-    'controllers' => \Rebing\GraphQL\GraphQLController::class . '@query',
+    'controllers' => \Absolvent\GraphQL\GraphQLController::class . '@query',
 
     // Any middleware for the graphql route group
     'middleware' => [],
@@ -131,7 +131,7 @@ return [
     //     'message' => '',
     //     'locations' => []
     // ]
-    'error_formatter' => ['\Rebing\GraphQL\GraphQL', 'formatError'],
+    'error_formatter' => ['\Absolvent\GraphQL\GraphQL', 'formatError'],
 
     /**
      * Custom Error Handling
@@ -140,7 +140,7 @@ return [
      *
      * The default handler will pass exceptions to laravel Error Handling mechanism
      */
-    'errors_handler' => ['\Rebing\GraphQL\GraphQL', 'handleErrors'],
+    'errors_handler' => ['\Absolvent\GraphQL\GraphQL', 'handleErrors'],
 
     // You can set the key, which will be used to retrieve the dynamic variables
     'params_key'    => 'variables',
@@ -158,16 +158,16 @@ return [
 
     /*
      * You can define your own pagination type.
-     * Reference \Rebing\GraphQL\Support\PaginationType::class
+     * Reference \Absolvent\GraphQL\Support\PaginationType::class
      */
-    'pagination_type' => \Rebing\GraphQL\Support\PaginationType::class,
+    'pagination_type' => \Absolvent\GraphQL\Support\PaginationType::class,
 
     /*
      * Config for GraphiQL (see (https://github.com/graphql/graphiql).
      */
     'graphiql' => [
         'prefix' => '/graphiql/{graphql_schema?}',
-        'controller' => \Rebing\GraphQL\GraphQLController::class.'@graphiql',
+        'controller' => \Absolvent\GraphQL\GraphQLController::class.'@graphiql',
         'middleware' => [],
         'view' => 'graphql::graphiql',
         'display' => env('ENABLE_GRAPHIQL', true),

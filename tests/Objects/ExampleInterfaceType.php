@@ -1,7 +1,7 @@
 <?php
 
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\InterfaceType;
+use Absolvent\GraphQL\Support\InterfaceType;
 
 class ExampleInterfaceType extends InterfaceType
 {
