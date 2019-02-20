@@ -1,5 +1,5 @@
 {
-    "name": "rebing/graphql-laravel",
+    "name": "absolvent/graphql-laravel",
     "description": "Laravel wrapper for PHP GraphQL",
     "keywords": ["framework", "laravel", "graphql", "react"],
     "authors": [
@@ -38,7 +38,7 @@
     },
     "autoload": {
         "psr-0": {
-            "Rebing\\GraphQL\\": "src/"
+            "Absolvent\\GraphQL\\": "src/"
         },
         "files": [
             "src/Rebing/GraphQL/helpers.php"
@@ -52,10 +52,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Rebing\\GraphQL\\GraphQLServiceProvider"
+                "Absolvent\\GraphQL\\GraphQLServiceProvider"
             ],
             "aliases": {
-                "GraphQL": "Rebing\\GraphQL\\Support\\Facades\\GraphQL"
+                "GraphQL": "Absolvent\\GraphQL\\Support\\Facades\\GraphQL"
             }
         }
     },

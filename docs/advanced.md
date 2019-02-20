@@ -92,7 +92,7 @@ or you can create a class that extends the abstract GraphQL Privacy class:
 
 ```php
 use Auth;
-use Rebing\GraphQL\Support\Privacy;
+use Absolvent\GraphQL\Support\Privacy;
 
 class MePrivacy extends Privacy
 {
@@ -165,7 +165,7 @@ You can also define a field as a class if you want to reuse it in multiple types
 namespace App\GraphQL\Fields;
 	
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Field;
+use Absolvent\GraphQL\Support\Field;
 
 class PictureField extends Field
 {        
@@ -212,7 +212,7 @@ namespace App\GraphQL\Type;
 use App\GraphQL\Fields\PictureField;
 use App\User;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Absolvent\GraphQL\Support\Type as GraphQLType;
 
 class UserType extends GraphQLType
 {
@@ -244,7 +244,7 @@ class UserType extends GraphQLType
 ### Eager loading relationships
 
 The third argument passed to a query's resolve method is an instance of
-`Rebing\GraphQL\Support\SelectFields` which you can use to retrieve keys
+`Absolvent\GraphQL\Support\SelectFields` which you can use to retrieve keys
 from the request. The following is an example of using this information
 to eager load related Eloquent models.
 
@@ -261,8 +261,8 @@ use App\User;
 use GraphQL;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ResolveInfo;
-use Rebing\GraphQL\Support\SelectFields;
-use Rebing\GraphQL\Support\Query;
+use Absolvent\GraphQL\Support\SelectFields;
+use Absolvent\GraphQL\Support\Query;
 
 class UsersQuery extends Query
 {
@@ -309,8 +309,8 @@ namespace App\GraphQL\Type;
 
 use App\User;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Facades\GraphQL;
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Absolvent\GraphQL\Support\Facades\GraphQL;
+use Absolvent\GraphQL\Support\Type as GraphQLType;
 
 class UserType extends GraphQLType
 {
@@ -601,7 +601,7 @@ First create an Enum as an extension of the GraphQLType class:
 
 namespace App\GraphQL\Enums;
 
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Absolvent\GraphQL\Support\Type as GraphQLType;
 
 class EpisodeEnum extends GraphQLType
 {
@@ -637,7 +637,7 @@ Then use it like:
 
 namespace App\GraphQL\Type;
 
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Absolvent\GraphQL\Support\Type as GraphQLType;
 
 class TestType extends GraphQLType
 {
@@ -668,7 +668,7 @@ namespace App\GraphQL\Unions;
 
 use App\Post;
 use GraphQL;
-use Rebing\GraphQL\Support\UnionType;
+use Absolvent\GraphQL\Support\UnionType;
 
 class SearchResultUnion extends UnionType
 {
@@ -709,7 +709,7 @@ namespace App\GraphQL\Interfaces;
 
 use GraphQL;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\InterfaceType;
+use Absolvent\GraphQL\Support\InterfaceType;
 
 class CharacterInterface extends InterfaceType
 {
@@ -754,7 +754,7 @@ A Type that implements an interface:
 namespace App\GraphQL\Types;
 
 use GraphQL;
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Absolvent\GraphQL\Support\Type as GraphQLType;
 use GraphQL\Type\Definition\Type;
 
 class HumanType extends GraphQLType
@@ -846,7 +846,7 @@ First create an InputObjectType as an extension of the GraphQLType class:
 namespace App\GraphQL\InputObject;
 
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Absolvent\GraphQL\Support\Type as GraphQLType;
 
 class ReviewInput extends GraphQLType
 {

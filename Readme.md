@@ -42,19 +42,19 @@ composer require rebing/graphql-laravel
 **1.** Laravel 5.5+ will autodiscover the package, for older versions add the
 following service provider
 ```php
-Rebing\GraphQL\GraphQLServiceProvider::class,
+Absolvent\GraphQL\GraphQLServiceProvider::class,
 ```
 
 and alias
 ```php
-'GraphQL' => 'Rebing\GraphQL\Support\Facades\GraphQL',
+'GraphQL' => 'Absolvent\GraphQL\Support\Facades\GraphQL',
 ```
 
 in your `config/app.php` file.
 
 **2.** Publish the configuration file
 ```bash
-$ php artisan vendor:publish --provider="Rebing\GraphQL\GraphQLServiceProvider"
+$ php artisan vendor:publish --provider="Absolvent\GraphQL\GraphQLServiceProvider"
 ```
 
 **3.** Review the configuration file
@@ -66,7 +66,7 @@ config/graphql.php
 
 **1.** Add the following service provider to the `bootstrap/app.php` file
 ```php
-$app->register(Rebing\GraphQL\GraphQLLumenServiceProvider::class);
+$app->register(Absolvent\GraphQL\GraphQLLumenServiceProvider::class);
 ```
 
 **2.** Publish the configuration file
@@ -79,7 +79,7 @@ $ php artisan graphql:publish"
 ```php
 $app->configure('graphql');
 ...
-$app->register(Rebing\GraphQL\GraphQLLumenServiceProvider::class);
+$app->register(Absolvent\GraphQL\GraphQLLumenServiceProvider::class);
 ```
 
 **4.** Review the configuration file
@@ -153,7 +153,7 @@ namespace App\GraphQL\Type;
 
 use App\User;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Absolvent\GraphQL\Support\Type as GraphQLType;
 
 class UserType extends GraphQLType
 {    
@@ -216,7 +216,7 @@ namespace App\GraphQL\Query;
 use App\User;
 use GraphQL;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Query;
+use Absolvent\GraphQL\Support\Query;
 
 class UsersQuery extends Query
 {
@@ -295,7 +295,7 @@ namespace App\GraphQL\Mutation;
 use App\User;
 use GraphQL;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Mutation;    
+use Absolvent\GraphQL\Support\Mutation;    
 
 class UpdateUserPasswordMutation extends Mutation
 {
@@ -376,7 +376,7 @@ namespace App\GraphQL\Mutation;
 use App\User;
 use GraphQL;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Mutation;
+use Absolvent\GraphQL\Support\Mutation;
 
 class UpdateUserEmailMutation extends Mutation
 {
@@ -511,8 +511,8 @@ so you have to upload them as multipart form:
 
 use GraphQL;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\UploadType;
-use Rebing\GraphQL\Support\Mutation;
+use Absolvent\GraphQL\Support\UploadType;
+use Absolvent\GraphQL\Support\Mutation;
 
 class UserProfilePhotoMutation extends Mutation
 {

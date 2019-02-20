@@ -4,9 +4,9 @@ use GraphQL\Type\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Error\Error;
-use Rebing\GraphQL\Error\ValidationError;
-use Rebing\GraphQL\Events\TypeAdded;
-use Rebing\GraphQL\Events\SchemaAdded;
+use Absolvent\GraphQL\Error\ValidationError;
+use Absolvent\GraphQL\Events\TypeAdded;
+use Absolvent\GraphQL\Events\SchemaAdded;
 
 class GraphQLTest extends TestCase
 {
@@ -90,7 +90,7 @@ class GraphQLTest extends TestCase
      * Test schema with wrong name
      *
      * @test
-     * @expectedException \Rebing\GraphQL\Exception\SchemaNotFound
+     * @expectedException \Absolvent\GraphQL\Exception\SchemaNotFound
      */
     public function testSchemaWithWrongName()
     {

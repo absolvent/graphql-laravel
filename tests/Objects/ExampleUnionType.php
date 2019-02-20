@@ -1,7 +1,7 @@
 <?php
 
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\UnionType as BaseUnionType;
+use Absolvent\GraphQL\Support\UnionType as BaseUnionType;
 
 class ExampleUnionType extends BaseUnionType
 {

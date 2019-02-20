@@ -1,7 +1,7 @@
 <?php
 
 use GraphQL\Error\Error;
-use Rebing\GraphQL\Error\ValidationError;
+use Absolvent\GraphQL\Error\ValidationError;
 
 class ErrorFormatter
 {

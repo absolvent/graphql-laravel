@@ -83,14 +83,14 @@ class TestCase extends BaseTestCase
     protected function getPackageProviders($app)
     {
         return [
-            \Rebing\GraphQL\GraphQLServiceProvider::class
+            \Absolvent\GraphQL\GraphQLServiceProvider::class
         ];
     }
 
     protected function getPackageAliases($app)
     {
         return [
-            'GraphQL' => \Rebing\GraphQL\Support\Facades\GraphQL::class
+            'GraphQL' => \Absolvent\GraphQL\Support\Facades\GraphQL::class
         ];
     }
 }
