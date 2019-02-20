@@ -1,8 +1,8 @@
 <?php
 
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Traits\ShouldValidate;
-use Rebing\GraphQL\Support\Type as BaseType;
+use Absolvent\GraphQL\Support\Traits\ShouldValidate;
+use Absolvent\GraphQL\Support\Type as BaseType;
 
 class ExampleValidationInputObject extends BaseType
 {

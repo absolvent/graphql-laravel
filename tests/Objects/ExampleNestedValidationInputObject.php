@@ -1,7 +1,7 @@
 <?php
 
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Type as BaseType;
+use Absolvent\GraphQL\Support\Type as BaseType;
 
 class ExampleNestedValidationInputObject extends BaseType
 {

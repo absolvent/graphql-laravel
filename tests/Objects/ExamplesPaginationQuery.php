@@ -1,7 +1,7 @@
 <?php
 
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Query;
+use Absolvent\GraphQL\Support\Query;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ExamplesPaginationQuery extends Query

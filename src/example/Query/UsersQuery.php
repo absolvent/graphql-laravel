@@ -1,9 +1,9 @@
 <?php
 
-namespace Rebing\GraphQL\Query\User;
+namespace Absolvent\GraphQL\Query\User;
 
-use Rebing\GraphQL\Support\Query;
-use Rebing\GraphQL\Support\SelectFields;
+use Absolvent\GraphQL\Support\Query;
+use Absolvent\GraphQL\Support\SelectFields;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\Type;
 use Models\User; // not included in this project

@@ -1,7 +1,7 @@
 <?php
 
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\Field;
+use Absolvent\GraphQL\Support\Field;
 
 class ExampleValidationField extends Field
 {
