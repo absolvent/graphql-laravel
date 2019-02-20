@@ -41,7 +41,7 @@
             "Absolvent\\GraphQL\\": "src/"
         },
         "files": [
-            "src/Rebing/GraphQL/helpers.php"
+            "src/Absolvent/GraphQL/helpers.php"
         ]
     },
     "autoload-dev": {
