@@ -39,10 +39,7 @@
     "autoload": {
         "psr-0": {
             "Absolvent\\GraphQL\\": "src/"
-        },
-        "files": [
-            "src/Absolvent/GraphQL/helpers.php"
-        ]
+        }
     },
     "autoload-dev": {
         "classmap": [
