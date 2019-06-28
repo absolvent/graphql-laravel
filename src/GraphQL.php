@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace Rebing\GraphQL;
 
 use Exception;
-use Rebing\GraphQL\Support\PaginationCursorType;
 use RuntimeException;
 use GraphQL\Error\Debug;
 use GraphQL\Error\Error;
@@ -273,10 +272,6 @@ class GraphQL
     public function paginate(string $typeName, string $customName = null): Type
     {
         $name = $customName ?: $typeName.'_pagination';
-
-        if (!isset($this->types['PaginationCursor'])) {
-            $this->types['PaginationCursor'] = new PaginationCursorType();
-        }
 
         if (! isset($this->typesInstances[$name])) {
             $paginationType = config('graphql.pagination_type', PaginationType::class);
