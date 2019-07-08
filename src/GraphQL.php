@@ -5,6 +5,7 @@ namespace Rebing\GraphQL;
 
 use Exception;
 use Rebing\GraphQL\Support\PaginationCursorType;
+use Rebing\GraphQL\Support\SortType;
 use RuntimeException;
 use GraphQL\Error\Debug;
 use GraphQL\Error\Error;
@@ -274,13 +275,19 @@ class GraphQL
     {
         $name = $customName ?: $typeName.'_pagination';
 
-        if (!isset($this->types['PaginationCursor'])) {
-            $this->types['PaginationCursor'] = new PaginationCursorType();
-        }
-
         if (! isset($this->typesInstances[$name])) {
             $paginationType = config('graphql.pagination_type', PaginationType::class);
             $this->typesInstances[$name] = new $paginationType($typeName, $customName);
+        }
+        return $this->typesInstances[$name];
+    }
+    public function sort(string $typeName, string $customName = null): Type
+    {
+        $name = $customName ?: $typeName.'_sort';
+
+        if(! isset($this->typesInstances[$name])) {
+            $sortType = config('graphql.sort_type', SortType::class);
+            $this->typesInstances[$name] = Type::listOf(new $sortType($typeName, $customName));
         }
         return $this->typesInstances[$name];
     }
