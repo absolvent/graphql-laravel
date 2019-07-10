@@ -11,13 +11,11 @@ class SortType extends InputObjectType
     const FIELD_FIELD = 'field';
     const FIELD_DIRECTION = 'direction';
 
-    public function __construct(string $typeName, string $customName = null)
+    public function __construct(string $sortTypeName)
     {
-        $name = $customName ?: $typeName.'SortType';
-
         $config = [
-            'name' => $name,
-            'fields' => $this->getSortFields($typeName)
+            'name' => "SortInputType",
+            'fields' => $this->getSortFields($sortTypeName)
         ];
 
         parent::__construct($config);
