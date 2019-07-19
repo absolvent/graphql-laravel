@@ -287,11 +287,11 @@ class GraphQL
 
         if(! isset($this->typesInstances[$name])) {
             $sortType = config('graphql.sort_type', SortType::class);
-            $this->typesInstances[$name] = Type::listOf(new $sortType($typeName));
+            $this->typesInstances[$name] = Type::listOf(new $sortType($typeName, $customName));
         }
         return $this->typesInstances[$name];
     }
-    /**
+    /**git c
      * @see \GraphQL\Executor\ExecutionResult::setErrorFormatter
      * @param  Error  $e
      * @return array

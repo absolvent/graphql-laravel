@@ -11,11 +11,13 @@ class SortType extends InputObjectType
     const FIELD_FIELD = 'field';
     const FIELD_DIRECTION = 'direction';
 
-    public function __construct(string $sortTypeName)
+    public function __construct(string $typeName, string $customName = null)
     {
+        $name = $customName ?: $typeName.'InputType';
+
         $config = [
-            'name' => "SortInputType",
-            'fields' => $this->getSortFields($sortTypeName)
+            'name' => $name,
+            'fields' => $this->getSortFields($typeName)
         ];
 
         parent::__construct($config);
@@ -31,9 +33,7 @@ class SortType extends InputObjectType
             ],
             [
                 'name' => self::FIELD_DIRECTION,
-                'type' => new DirectionEnumType([
-                    DirectionEnumType::TYPE_NAME
-                ]),
+                'type' => GraphQL::type(DirectionEnumType::TYPE_NAME),
                 'description' => 'Sorting direction'
             ]
         ];

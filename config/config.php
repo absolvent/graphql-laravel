@@ -6,6 +6,7 @@ use example\Type\ExampleType;
 use example\Query\ExampleQuery;
 use example\Mutation\ExampleMutation;
 use example\Type\ExampleRelationType;
+use Rebing\GraphQL\Type\Definition\DirectionEnum;
 
 return [
 
@@ -123,6 +124,7 @@ return [
     'types' => [
         // 'example'           => ExampleType::class,
         // 'relation_example'  => ExampleRelationType::class,
+        DirectionEnum::class
     ],
 
     // This callable will be passed the Error object for each errors GraphQL catch.
