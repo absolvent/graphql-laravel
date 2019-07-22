@@ -291,7 +291,7 @@ class GraphQL
         }
         return $this->typesInstances[$name];
     }
-    /**git c
+    /**
      * @see \GraphQL\Executor\ExecutionResult::setErrorFormatter
      * @param  Error  $e
      * @return array
