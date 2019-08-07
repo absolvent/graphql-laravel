@@ -24,6 +24,36 @@ class GraphQLQueryTest extends TestCase
         ]);
     }
 
+    public function testConfigKeysIsDifferentFromTypeClassNameQuery(): void
+    {
+        if (app('config')->get('graphql.lazyload_types')) {
+            $this->markTestSkipped('Skipping test when lazyload_types=true');
+        }
+
+        $result = GraphQL::queryAndReturnResult($this->queries['examplesWithConfigAlias']);
+
+        $this->assertObjectHasAttribute('data', $result);
+
+        $this->assertEquals($result->data, [
+            'examplesConfigAlias' => $this->data,
+        ]);
+    }
+
+    public function testConfigKeyIsDifferentFromTypeClassNameNotSupportedInLazyLoadingOfTypes(): void
+    {
+        if (false === app('config')->get('graphql.lazyload_types')) {
+            $this->markTestSkipped('Skipping test when lazyload_types=false');
+        }
+
+        $result = GraphQL::queryAndReturnResult($this->queries['examplesWithConfigAlias']);
+        $this->assertObjectHasAttribute('errors', $result);
+
+        $expected = "Type Example2 not found.
+Check that the config array key for the type matches the name attribute in the type's class.
+It is required when 'lazyload_types' is enabled";
+        $this->assertSame($expected, $result->errors[0]->message);
+    }
+
     /**
      * Test query methods.
      */
@@ -83,7 +113,9 @@ class GraphQLQueryTest extends TestCase
      */
     public function testQueryAndReturnResultWithAuthorize(): void
     {
-        $result = GraphQL::query($this->queries['examplesWithAuthorize']);
+        $result = $this->graphql($this->queries['examplesWithAuthorize'], [
+            'expectErrors' => true,
+        ]);
         $this->assertNull($result['data']['examplesAuthorize']);
         $this->assertEquals('Unauthorized', $result['errors'][0]['message']);
     }
@@ -115,7 +147,9 @@ class GraphQLQueryTest extends TestCase
      */
     public function testQueryWithError(): void
     {
-        $result = GraphQL::query($this->queries['examplesWithError']);
+        $result = $this->graphql($this->queries['examplesWithError'], [
+            'expectErrors' => true,
+        ]);
 
         $this->assertArrayHasKey('errors', $result);
         $this->assertCount(1, $result['errors']);
@@ -128,7 +162,9 @@ class GraphQLQueryTest extends TestCase
      */
     public function testQueryWithValidationError(): void
     {
-        $result = GraphQL::query($this->queries['examplesWithValidation']);
+        $result = $this->graphql($this->queries['examplesWithValidation'], [
+            'expectErrors' => true,
+        ]);
 
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayHasKey('errors', $result);
@@ -142,8 +178,10 @@ class GraphQLQueryTest extends TestCase
      */
     public function testQueryWithValidation(): void
     {
-        $result = GraphQL::query($this->queries['examplesWithValidation'], [
-            'index' => 0,
+        $result = $this->graphql($this->queries['examplesWithValidation'], [
+            'variables' => [
+                'index' => 0,
+            ],
         ]);
 
         $this->assertArrayHasKey('data', $result);

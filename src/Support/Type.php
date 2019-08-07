@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace Rebing\GraphQL\Support;
 
 use Illuminate\Support\Str;
-use Illuminate\Support\Fluent;
 use GraphQL\Type\Definition\EnumType;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type as GraphqlType;
+use Rebing\GraphQL\Support\Contracts\TypeConvertible;
 
 /**
  * @property string $name
  */
-abstract class Type extends Fluent
+abstract class Type implements TypeConvertible
 {
+    protected $attributes = [];
     /**
      * Set to `true` in your type when it should reflect an InputObject.
      * @var bool
@@ -27,6 +28,8 @@ abstract class Type extends Fluent
     /**
      * Set to `true` in your type when it should reflect an Enum.
      * @var bool
+     * @deprecated Use EnumType instead
+     * @see EnumType
      */
     protected $enumObject = false;
 
@@ -105,7 +108,7 @@ abstract class Type extends Fluent
      *
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         $attributes = $this->attributes();
         $interfaces = $this->interfaces();
@@ -128,7 +131,7 @@ abstract class Type extends Fluent
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->getAttributes();
     }
@@ -159,17 +162,8 @@ abstract class Type extends Fluent
         return isset($attributes[$key]) ? $attributes[$key] : null;
     }
 
-    /**
-     * Dynamically check if an attribute is set.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function __isset($key)
+    public function __set(string $key, $value): void
     {
-        $attributes = $this->getAttributes();
-
-        return isset($attributes[$key]);
+        $this->attributes[$key] = $value;
     }
 }

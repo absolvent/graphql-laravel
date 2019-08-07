@@ -7,11 +7,17 @@ namespace Rebing\GraphQL;
 use GraphQL\Validator\Rules\QueryDepth;
 use Illuminate\Support\ServiceProvider;
 use GraphQL\Validator\DocumentValidator;
+use Rebing\GraphQL\Console\EnumMakeCommand;
 use Rebing\GraphQL\Console\TypeMakeCommand;
 use GraphQL\Validator\Rules\QueryComplexity;
+use Rebing\GraphQL\Console\FieldMakeCommand;
+use Rebing\GraphQL\Console\InputMakeCommand;
 use Rebing\GraphQL\Console\QueryMakeCommand;
+use Rebing\GraphQL\Console\UnionMakeCommand;
 use Illuminate\Contracts\Container\Container;
+use Rebing\GraphQL\Console\ScalarMakeCommand;
 use Rebing\GraphQL\Console\MutationMakeCommand;
+use Rebing\GraphQL\Console\InterfaceMakeCommand;
 use GraphQL\Validator\Rules\DisableIntrospection;
 
 class GraphQLServiceProvider extends ServiceProvider
@@ -24,10 +30,6 @@ class GraphQLServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->bootPublishes();
-
-        $this->bootTypes();
-
-        $this->bootSchemas();
 
         $this->bootRouter();
     }
@@ -64,26 +66,28 @@ class GraphQLServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap publishes.
+     * Add types from config.
      *
+     * @param  GraphQL  $graphQL
      * @return void
      */
-    protected function bootTypes(): void
+    protected function bootTypes(GraphQL $graphQL): void
     {
         $configTypes = config('graphql.types');
-        $this->app->make('graphql')->addTypes($configTypes);
+        $graphQL->addTypes($configTypes);
     }
 
     /**
      * Add schemas from config.
      *
+     * @param  GraphQL  $graphQL
      * @return void
      */
-    protected function bootSchemas(): void
+    protected function bootSchemas(GraphQL $graphQL): void
     {
         $configSchemas = config('graphql.schemas');
         foreach ($configSchemas as $name => $schema) {
-            $this->app->make('graphql')->addSchema($name, $schema);
+            $graphQL->addSchema($name, $schema);
         }
     }
 
@@ -137,7 +141,13 @@ class GraphQLServiceProvider extends ServiceProvider
 
             $this->applySecurityRules();
 
+            $this->bootSchemas($graphql);
+
             return $graphql;
+        });
+
+        $this->app->afterResolving('graphql', function (GraphQL $graphQL) {
+            $this->bootTypes($graphQL);
         });
     }
 
@@ -148,9 +158,16 @@ class GraphQLServiceProvider extends ServiceProvider
      */
     public function registerConsole(): void
     {
-        $this->commands(TypeMakeCommand::class);
-        $this->commands(QueryMakeCommand::class);
+        $this->commands(EnumMakeCommand::class);
+        $this->commands(FieldMakeCommand::class);
+        $this->commands(InputMakeCommand::class);
+        $this->commands(InterfaceMakeCommand::class);
+        $this->commands(InterfaceMakeCommand::class);
         $this->commands(MutationMakeCommand::class);
+        $this->commands(QueryMakeCommand::class);
+        $this->commands(ScalarMakeCommand::class);
+        $this->commands(TypeMakeCommand::class);
+        $this->commands(UnionMakeCommand::class);
     }
 
     /**

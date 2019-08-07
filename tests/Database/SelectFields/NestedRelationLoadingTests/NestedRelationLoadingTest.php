@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Rebing\GraphQL\Tests\Database\SelectFields\NestedRelationLoadingTests;
 
 use Rebing\GraphQL\Tests\TestCaseDatabase;
-use Rebing\GraphQL\Support\Facades\GraphQL;
 use Rebing\GraphQL\Tests\Support\Models\Post;
 use Rebing\GraphQL\Tests\Support\Models\User;
 use Rebing\GraphQL\Tests\Support\Models\Comment;
@@ -54,7 +53,7 @@ GRAQPHQL;
 
         $this->sqlCounterReset();
 
-        $result = GraphQL::query($graphql);
+        $result = $this->graphql($graphql);
 
         $this->assertSqlQueries(<<<'SQL'
 select * from "users" order by "users"."id" asc;
@@ -195,7 +194,7 @@ GRAQPHQL;
 
         $this->sqlCounterReset();
 
-        $result = GraphQL::query($graphql);
+        $result = $this->graphql($graphql);
 
         $this->assertSqlQueries(<<<'SQL'
 select "users"."id", "users"."name" from "users" order by "users"."id" asc;
@@ -336,7 +335,7 @@ GRAQPHQL;
 
         $this->sqlCounterReset();
 
-        $result = GraphQL::query($graphql);
+        $result = $this->graphql($graphql);
 
         $this->assertSqlQueries(<<<'SQL'
 select * from "users" order by "users"."id" asc;
@@ -473,7 +472,7 @@ GRAQPHQL;
 
         $this->sqlCounterReset();
 
-        $result = GraphQL::query($graphql);
+        $result = $this->graphql($graphql);
 
         $this->assertSqlQueries(<<<'SQL'
 select "users"."id", "users"."name" from "users" order by "users"."id" asc;
@@ -623,7 +622,7 @@ GRAQPHQL;
 
         $this->sqlCounterReset();
 
-        $result = GraphQL::query($graphql);
+        $result = $this->graphql($graphql);
 
         $this->assertSqlQueries(<<<'SQL'
 select "users"."id", "users"."name" from "users" order by "users"."id" asc;
@@ -749,7 +748,7 @@ GRAQPHQL;
 
         $this->sqlCounterReset();
 
-        $result = GraphQL::query($graphql);
+        $result = $this->graphql($graphql);
 
         $this->assertSqlQueries(<<<'SQL'
 select "users"."id", "users"."name" from "users" order by "users"."id" asc;
@@ -800,6 +799,64 @@ SQL
                 ],
             ],
         ];
+        $this->assertEquals($expectedResult, $result);
+    }
+
+    public function testRelationshipAlias(): void
+    {
+        $users = factory(User::class, 1)
+            ->create()
+            ->each(function (User $user): void {
+                factory(Post::class)
+                    ->create([
+                        'flag' => true,
+                        'user_id' => $user->id,
+                    ]);
+            });
+
+        $graphql = <<<'GRAQPHQL'
+{
+  users(select: true, with: true) {
+    id
+    name
+    flaggedPosts {
+      body
+      id
+      title
+
+    }
+  }
+}
+GRAQPHQL;
+
+        $this->sqlCounterReset();
+
+        $result = $this->graphql($graphql);
+
+        $this->assertSqlQueries(<<<'SQL'
+select "users"."id", "users"."name" from "users" order by "users"."id" asc;
+select "posts"."body", "posts"."id", "posts"."title", "posts"."user_id" from "posts" where "posts"."user_id" in (?) and "posts"."flag" = ? order by "posts"."id" asc;
+SQL
+        );
+
+        $expectedResult = [
+            'data' => [
+                'users' => [
+                    [
+                        'id' => (string) $users[0]->id,
+                        'name' => $users[0]->name,
+                        'flaggedPosts' => [
+                            [
+                                'body' => $users[0]->posts[0]->body,
+                                'id' => (string) $users[0]->posts[0]->id,
+                                'title' => $users[0]->posts[0]->title,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
         $this->assertEquals($expectedResult, $result);
     }
 

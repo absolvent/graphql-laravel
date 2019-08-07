@@ -7,7 +7,6 @@ namespace Rebing\GraphQL\Support;
 use Closure;
 use Validator;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Fluent;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\WrappingType;
@@ -16,11 +15,16 @@ use GraphQL\Type\Definition\InputObjectType;
 use Rebing\GraphQL\Error\AuthorizationError;
 use GraphQL\Type\Definition\Type as GraphqlType;
 
-abstract class Field extends Fluent
+abstract class Field
 {
+    protected $attributes = [];
+
     /**
      * Override this in your queries or mutations
      * to provide custom authorization.
+     *
+     * @param  array  $args
+     * @return bool
      */
     public function authorize(array $args): bool
     {
@@ -67,11 +71,7 @@ abstract class Field extends Fluent
         $argsRules = [];
         foreach ($this->args() as $name => $arg) {
             if (isset($arg['rules'])) {
-                if (is_callable($arg['rules'])) {
-                    $argsRules[$name] = $this->resolveRules($arg['rules'], $arguments);
-                } else {
-                    $argsRules[$name] = $arg['rules'];
-                }
+                $argsRules[$name] = $this->resolveRules($arg['rules'], $arguments);
             }
 
             if (isset($arg['type'])
@@ -84,11 +84,11 @@ abstract class Field extends Fluent
     }
 
     /**
-     * @param  array|callable  $rules
+     * @param  array|string|callable  $rules
      * @param  array  $arguments
-     * @return array
+     * @return array|string
      */
-    public function resolveRules($rules, array $arguments): array
+    public function resolveRules($rules, array $arguments)
     {
         if (is_callable($rules)) {
             return call_user_func_array($rules, $arguments);
@@ -171,11 +171,6 @@ abstract class Field extends Fluent
                 $arguments[1] = array_merge($arguments[1], $arguments[2]);
             }
 
-            // Authorize
-            if (call_user_func($authorize, $arguments[1]) != true) {
-                throw new AuthorizationError('Unauthorized');
-            }
-
             // Validate mutation arguments
             if (method_exists($this, 'getRules')) {
                 $args = Arr::get($arguments, 1, []);
@@ -190,6 +185,11 @@ abstract class Field extends Fluent
                         throw new ValidationError('validation', $validator);
                     }
                 }
+            }
+
+            // Authorize
+            if (call_user_func($authorize, $arguments[1]) != true) {
+                throw new AuthorizationError('Unauthorized');
             }
 
             // Add the 'selects and relations' feature as 5th arg
@@ -208,13 +208,15 @@ abstract class Field extends Fluent
      *
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         $attributes = $this->attributes();
 
-        $attributes = array_merge($this->attributes, [
-            'args' => $this->args(),
-        ], $attributes);
+        $attributes = array_merge(
+            $this->attributes,
+            ['args' => $this->args()],
+            $attributes
+        );
 
         $attributes['type'] = $this->type();
 
@@ -231,7 +233,7 @@ abstract class Field extends Fluent
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->getAttributes();
     }
@@ -250,17 +252,8 @@ abstract class Field extends Fluent
         return isset($attributes[$key]) ? $attributes[$key] : null;
     }
 
-    /**
-     * Dynamically check if an attribute is set.
-     *
-     * @param string $key
-     *
-     * @return bool
-     */
-    public function __isset($key)
+    public function __set(string $key, $value): void
     {
-        $attributes = $this->getAttributes();
-
-        return isset($attributes[$key]);
+        $this->attributes[$key] = $value;
     }
 }

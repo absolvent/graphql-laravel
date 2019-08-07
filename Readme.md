@@ -7,6 +7,7 @@
 [![License](https://poser.pugx.org/rebing/graphql-laravel/license)](https://packagist.org/packages/rebing/graphql-laravel)
 [![Get on Slack](https://img.shields.io/badge/slack-join-orange.svg)](https://join.slack.com/t/rebing-graphql/shared_invite/enQtNTE5NjQzNDI5MzQ4LWVjMTMxNzIyZjBlNTFhZGQ5MDVjZDAwZDNjODA3ODE2NjdiOGJkMjMwMTZkZmNhZjhiYTE1MjEyNDk0MWJmMzk)
 
+### Note: these are the docs for 2.*, [please see the `v1` branch for the 1.* docs](https://github.com/rebing/graphql-laravel/tree/v1#laravel-graphql)
 
 Uses Facebook GraphQL with Laravel 5.5+. It is based on the PHP implementation [here](https://github.com/webonyx/graphql-php). You can find more information about GraphQL in the [GraphQL Introduction](http://facebook.github.io/react/blog/2015/05/01/graphql-introduction.html) on the [React](http://facebook.github.io/react) blog or you can read the [GraphQL specifications](https://facebook.github.io/graphql/). This is a work in progress.
 
@@ -24,6 +25,7 @@ It offers following features and improvements over the original package by
   and thus dealing with n+1 problems
 * Pagination support
 * Server-side support for [query batching](https://blog.apollographql.com/batching-client-graphql-queries-a685f5bcd41b)
+* Support for file uploads
 
 ## Installation
 
@@ -112,6 +114,7 @@ To work this around:
 - [Type relationship query](#type-relationship-query)
 - [Pagination](#pagination)
 - [Batching](#batching)
+- [Scalar Types](#scalar-types)
 - [Enums](#enums)
 - [Unions](#unions)
 - [Interfaces](#interfaces)
@@ -119,6 +122,9 @@ To work this around:
 - [JSON Columns](#json-columns)
 - [Field deprecation](#field-deprecation)
 - [Default Field Resolver](#default-field-resolver)
+- [Upgrading from v1 to v2](#upgrading-from-v1-to-v2)
+- [Migrating from Folklore](#migrating-from-folklore)
+- [Performance considerations](#performance-considerations)
 
 ### Schemas
 
@@ -139,7 +145,7 @@ in addition to the global middleware. For example:
     ],
     'user' => [
         'query' => [
-            'profile' => App\GraphQL\Query\ProfileQuery::class
+            'profile' => App\GraphQL\Queries\ProfileQuery::class
         ],
         'mutation' => [
         
@@ -158,7 +164,7 @@ First you need to create a type. The Eloquent Model is only required, if specify
 ```php
 <?php
 
-namespace App\GraphQL\Type;
+namespace App\GraphQL\Types;
 
 use App\User;
 use GraphQL\Type\Definition\Type;
@@ -179,6 +185,7 @@ class UserType extends GraphQLType
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'The id of the user',
                 // Use 'alias', if the database column is different from the type name.
+                // This is supported for discrete values as well as relations.
                 // You can also use `DB::raw()` to solve more complex issues
                 'alias' => 'user_id',
             ],
@@ -208,21 +215,21 @@ Add the type to the `config/graphql.php` configuration file
 
 ```php
 'types' => [
-    'user' => App\GraphQL\Type\UserType::class
+    'user' => App\GraphQL\Types\UserType::class
 ]
 ```
 
 You could also add the type with the `GraphQL` Facade, in a service provider for example.
 
 ```php
-GraphQL::addType(\App\GraphQL\Type\UserType::class, 'user');
+GraphQL::addType(\App\GraphQL\Types\UserType::class, 'user');
 ```
 
 Then you need to define a query that returns this type (or a list). You can also specify arguments that you can use in the resolve method.
 ```php
 <?php
 
-namespace App\GraphQL\Query;
+namespace App\GraphQL\Queries;
 
 use Closure;
 use App\User;
@@ -271,7 +278,7 @@ Add the query to the `config/graphql.php` configuration file
 'schemas' => [
     'default' => [
         'query' => [
-            'users' => App\GraphQL\Query\UsersQuery::class
+            'users' => App\GraphQL\Queries\UsersQuery::class
         ],
         // ...
     ]
@@ -303,7 +310,7 @@ For example, a mutation to update the password of a user. First you need to defi
 ```php
 <?php
 
-namespace App\GraphQL\Mutation;
+namespace App\GraphQL\Mutations;
 
 use CLosure;
 use App\User;
@@ -354,7 +361,7 @@ You should then add the mutation to the `config/graphql.php` configuration file:
 'schemas' => [
     'default' => [
         'mutation' => [
-            'updateUserPassword' => App\GraphQL\Mutation\UpdateUserPasswordMutation::class
+            'updateUserPassword' => App\GraphQL\Mutations\UpdateUserPasswordMutation::class
         ],
         // ...
     ]
@@ -386,7 +393,7 @@ When creating a mutation, you can add a method to define the validation rules th
 ```php
 <?php
 
-namespace App\GraphQL\Mutation;
+namespace App\GraphQL\Mutations;
 
 use Closure;
 use App\User;
@@ -515,9 +522,17 @@ public function validationErrorMessages(array $args = []): array
 
 #### File uploads
 
-For uploading new files just use `UploadType`. This support of uploading files is
-based on https://github.com/jaydenseric/graphql-multipart-request-spec
-so you have to upload them as multipart form:
+This library provides a middleware compliant with the spec at https://github.com/jaydenseric/graphql-multipart-request-spec .
+
+You have to add the `\Rebing\GraphQL\Support\UploadType` first to your `config/graphql` schema types definition:
+
+```php
+'types' => [
+    \Rebing\GraphQL\Support\UploadType::class,
+],
+```
+
+It is relevant that you send the request as `multipart/form-data`:
 
 > **WARNING:** when you are uploading files, Laravel will use FormRequest - it means
 > that middlewares which are changing request, will not have any effect.
@@ -525,13 +540,12 @@ so you have to upload them as multipart form:
 ```php
 <?php
 
-namespace App\GraphQL\Mutation;
+namespace App\GraphQL\Mutations;
 
 use Closure;
 use GraphQL;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
-use Rebing\GraphQL\Support\UploadType;
 use Rebing\GraphQL\Support\Mutation;
 
 class UserProfilePhotoMutation extends Mutation
@@ -550,7 +564,7 @@ class UserProfilePhotoMutation extends Mutation
         return [
             'profilePicture' => [
                 'name' => 'profilePicture',
-                'type' => UploadType::getInstance(),
+                'type' => GraphQL::type('Upload'),
                 'rules' => ['required', 'image', 'max:1500'],
             ],
         ];
@@ -628,7 +642,7 @@ class UserType extends GraphQLType
             'email' => [
                 'type'          => Type::string(),
                 'description'   => 'The email of user',
-                'privacy'       => function(array $args) {
+                'privacy'       => function(array $args): bool {
                     return $args['id'] == Auth::id();
                 }
             ]
@@ -648,7 +662,7 @@ use Rebing\GraphQL\Support\Privacy;
 
 class MePrivacy extends Privacy
 {
-    public function validate(array $args)
+    public function validate(array $queryArgs): bool
     {
         return $args['id'] == Auth::id();
     }
@@ -759,7 +773,7 @@ You can then use it in your type declaration
 ```php
 <?php
 
-namespace App\GraphQL\Type;
+namespace App\GraphQL\Types;
 
 use App\GraphQL\Fields\PictureField;
 use App\User;
@@ -807,7 +821,7 @@ Your Query would look like:
 ```php
 <?php
 
-namespace App\GraphQL\Query;
+namespace App\GraphQL\Queries;
 
 use App\User;
 use GraphQL;
@@ -855,10 +869,13 @@ relations must also exist in the UserModel's relations. If some fields are
 required for the relation to load or validation etc, then you can define an
 `always` attribute that will add the given attributes to select.
 
+The attribute can be a comma separted string or an array of attribues to
+always include.
+
 ```php
 <?php
 
-namespace App\GraphQL\Type;
+namespace App\GraphQL\Types;
 
 use App\User;
 use GraphQL\Type\Definition\Type;
@@ -1066,6 +1083,25 @@ within a certain interval of time.
 
 There are tools that help with this and can handle the batching for you, e.g [Apollo](http://www.apollodata.com/)
 
+### Scalar Types
+
+GraphQL comes with built-in scalar types for string, int, boolean, etc. It's possible to create custom scalar types to special purpose fields.
+
+An example could be a link: instead of using `Type::string()` you could create a scalar type `Link` and reference it with `GraphQL::type('Link')`.
+
+The benefits would be:
+
+- a dedicated description so you can give more meaning/purpose to a field than just call it a string type
+- explicit conversion logic for the followig steps:
+  - converting from the internal logic to the serialized GraphQL output (`serialize`)
+  - query/field input argument conversion (`parseLiteral`)
+  - when passed as variables to your query (`parseValue`)
+
+This also means validation logic can be added within these methods to _ensure_ that the value delivered/received is e.g. a true link.
+
+A scalar type has to implement all the methods; you can quick start this with `artisan make:graphql:scalar <typename>`. Then just add the scalar to your existing types in the schema.
+
+For more advanced use, please [refer to the official documentation regarding scalar types](https://webonyx.github.io/graphql-php/type-system/scalar-types).
 
 ### Enums
 
@@ -1078,12 +1114,10 @@ First create an Enum as an extension of the GraphQLType class:
 
 namespace App\GraphQL\Enums;
 
-use Rebing\GraphQL\Support\Type as GraphQLType;
+use Rebing\GraphQL\Support\EnumType;
 
-class EpisodeEnum extends GraphQLType
+class EpisodeEnum extends EnumType
 {
-    protected $enumObject = true;
-
     protected $attributes = [
         'name' => 'Episode',
         'description' => 'The types of demographic elements',
@@ -1112,7 +1146,7 @@ Then use it like:
 ```php
 <?php
 
-namespace App\GraphQL\Type;
+namespace App\GraphQL\Types;
 
 use Rebing\GraphQL\Support\Type as GraphQLType;
 
@@ -1153,7 +1187,7 @@ class SearchResultUnion extends UnionType
         'name' => 'SearchResult',
     ];
 
-    public function types()
+    public function types(): array
     {
         return [
             GraphQL::type('Post'),
@@ -1422,7 +1456,7 @@ using [Apollo Engine](https://blog.apollographql.com/schema-validation-with-apol
 ```php
 <?php
 
-namespace App\GraphQL\Type;
+namespace App\GraphQL\Types;
 
 use App\User;
 use GraphQL\Type\Definition\Type;
@@ -1477,3 +1511,98 @@ You can define any valid callable (static class method, closure, etc.) for it:
 ```
 
 The parameters received are your regular "resolve" function signature.
+
+## Guides
+
+### Upgrading from v1 to v2
+
+Although version 2 builds on the same code base and does not radically change how the library itself works, many things were improved, sometimes leading to incompatible changes.
+
+- Step 0: make a backup!
+- Re-publish the configuration file to learn about all the new settings
+- The order and arguments/types for resolvers has changed:
+  - before: `resolve($root, $array, SelectFields $selectFields, ResolveInfo $info)`
+  - after: `resolve($root, $array, $context, ResolveInfo $info, Closure $getSelectFields)`
+  - If you now want to use SelectFields, you've to first request it: `$selectFields = $getSelectFields();`. The primary reason for this is performance. SelectFields is an optional feature but consumes resources to traverse the GraphQL request AST and introspect all the types for their configuration to apply its magic. In the past it was always constructed and thus consumed resources, even when not requested. This has been changed to an explicit form.
+- Many method signature declarations changed to improve type safety, which have to be adapted:
+  - The signature of the method fields changed:
+    - from `public function fields()`
+    - to `public function fields(): array`
+  - The signature of the method toType changed:
+    - from `public function toType()`
+    - to `public function toType(): \GraphQL\Type\Definition\Type`
+  - The signature of the method getFields changed:
+    - from `public function getFields()`
+    - to `public function getFields(): array`
+  - The signature of the method interfaces changed:
+    - from `public function interfaces()`
+    - to `public function interfaces(): array`
+  - The signature of the method types changed:
+    - from `public function types()`
+    - to `public function types(): array`
+  - The signature of the method type changed:
+    - from `public function type()`
+    - to `public function type(): \GraphQL\Type\Definition\Type`
+  - The signature of the method args changed:
+    - from `public function args()`
+    - to `public function args(): array`
+  - The signature of the method queryContext changed:
+    - from `protected function queryContext($query, $variables, $schema)`
+    - to `protected function queryContext()`
+  - The signature of the controller method query changed:
+    - from `function query($query, $variables = [], $opts = [])`
+    - to `function query(string $query, ?array $variables = [], array $opts = []): array`
+  - If you're using custom Scalar types:
+    - the signature of the method parseLiteral changed (due to upgrade of the webonxy library):
+      - from `public function parseLiteral($ast)`
+      - to `public function parseLiteral($valueNode, ?array $variables = null)`
+- The `UploadType` now has to be added manually to the `types` in your schema if you want to use it. The `::getInstance()` method is gone, you simple reference it like any other type via `GraphQL::type('Upload')`.
+- Follow Laravel convention and use plural for namspaces (e.g. new queries are placed in `App\GraphQL\Queries`, not `App\GraphQL\Query` anymore); the respective `make` commands have been adjusted. This will not break any existing code, but code generates will use the new schema.
+- Be sure to read the [Changelog](CHANGELOG.md) for more details
+
+### Migrating from Folklore
+https://github.com/folkloreinc/laravel-graphql, formerly also known as https://github.com/Folkloreatelier/laravel-graphql
+
+Both code bases are very similar and, depending on your level of customization, the migration may be very quick.
+
+Note: this migration is written with version 2.* of this library in mind.
+
+The following is not a bullet-proof list but should serve as a guide. It's not an error if you don't need to perform certain steps.
+
+**Make a backup before proceeding!**
+
+- `composer remove folklore/graphql`
+- if you've a custom ServiceProvider or did include it manually, remove it. The point is that the existing GraphQL code should not be triggered to run.
+- `composer require rebing/graphql-laravel`
+- Publish `config/graphql.php` and adapt it (prefix, middleware, schemas, types, mutations, queries, security settings, graphiql)
+  - Removed settings
+    - `domain`
+    - `resolvers`
+  - `schema` (defaul schema) renamed to `default_schema`
+  - `middleware_schema` does not exist, it's defined within a `schema.<name>.middleware` now
+- Change namespace references:
+  - from `Folklore\`
+  - to `Rebing\`
+- See [Upgrade guide from v1 to v2 for all the function signature changes](#upgrading-from-v1-to-v2)  
+- The trait `ShouldValidate` does not exist anymore; the provided features are baked into `Field`
+- The first argument to the resolve method for queries/mutations is now `null` (previously its default was an empty array)
+
+## Performance considerations
+
+### Lazy loading of types
+
+Lazy loading of types is a way of improving the start up performance.
+
+If you are declaring types using aliases it is not supported.
+If that is not the case, you can enable it with `lazyload_types` set to `true`.
+
+#### Example of aliasing **not** supported by lazy loading
+
+I.e. you cannot have a query class `ExampleQuery` with the `$name` property
+`example` but register it with a different one; this will **not** work:
+
+```php
+'query' => [
+    'aliasedEXample' => ExampleQuery::class,
+],
+```

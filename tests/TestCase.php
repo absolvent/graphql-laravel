@@ -15,14 +15,17 @@ use Rebing\GraphQL\Support\Facades\GraphQL;
 use GraphQL\Type\Definition\FieldDefinition;
 use Orchestra\Database\ConsoleServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use PHPUnit\Framework\ExpectationFailedException;
 use Symfony\Component\Console\Tester\CommandTester;
 use Rebing\GraphQL\Tests\Support\Objects\ExampleType;
+use Rebing\GraphQL\Tests\Support\Objects\ExampleType2;
 use Rebing\GraphQL\Tests\Support\Objects\ExamplesQuery;
 use Rebing\GraphQL\Tests\Support\Objects\ExamplesFilteredQuery;
 use Rebing\GraphQL\Tests\Support\Objects\UpdateExampleMutation;
 use Rebing\GraphQL\Tests\Support\Objects\ExampleFilterInputType;
 use Rebing\GraphQL\Tests\Support\Objects\ExamplesAuthorizeQuery;
 use Rebing\GraphQL\Tests\Support\Objects\ExamplesPaginationQuery;
+use Rebing\GraphQL\Tests\Support\Objects\ExamplesConfigAliasQuery;
 
 class TestCase extends BaseTestCase
 {
@@ -42,12 +45,17 @@ class TestCase extends BaseTestCase
 
     protected function getEnvironmentSetUp($app)
     {
+        if (env('TESTS_ENABLE_LAZYLOAD_TYPES') === '1') {
+            $app['config']->set('graphql.lazyload_types', true);
+        }
+
         $app['config']->set('graphql.schemas.default', [
             'query' => [
                 'examples'           => ExamplesQuery::class,
                 'examplesAuthorize'  => ExamplesAuthorizeQuery::class,
                 'examplesPagination' => ExamplesPaginationQuery::class,
                 'examplesFiltered'   => ExamplesFilteredQuery::class,
+                'examplesConfigAlias' => ExamplesConfigAliasQuery::class,
             ],
             'mutation' => [
                 'updateExample' => UpdateExampleMutation::class,
@@ -65,6 +73,7 @@ class TestCase extends BaseTestCase
 
         $app['config']->set('graphql.types', [
             'Example'            => ExampleType::class,
+            'ExampleConfigAlias' => ExampleType2::class,
             'ExampleFilterInput' => ExampleFilterInputType::class,
         ]);
 
@@ -169,5 +178,69 @@ class TestCase extends BaseTestCase
         $tester->execute($arguments);
 
         return $tester;
+    }
+
+    /**
+     * Helper to dispatch an internal GraphQL requests.
+     *
+     * @param  string  $query
+     * @param  array  $options
+     * @return array Supports the following options:
+     *  - `expectErrors` (default: false): if no errors are expected but present, let's the test fail
+     *  - `variables` (default: null): GraphQL variables for the query
+     */
+    protected function graphql(string $query, array $options = []): array
+    {
+        $expectErrors = $options['expectErrors'] ?? false;
+        $variables = $options['variables'] ?? null;
+
+        $result = GraphQL::query($query, $variables);
+
+        $assertMessage = null;
+
+        if (! $expectErrors && isset($result['errors'])) {
+            $appendErrors = '';
+            if (isset($result['errors'][0]['trace'])) {
+                $appendErrors = "\n\n".$this->formatSafeTrace($result['errors'][0]['trace']);
+            }
+
+            $assertMessage = "Probably unexpected error in GraphQL response:\n"
+                .var_export($result, true)
+                .$appendErrors;
+        }
+        unset($result['errors'][0]['trace']);
+
+        if ($assertMessage) {
+            throw new ExpectationFailedException($assertMessage);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Converts the trace as generated from \GraphQL\Error\FormattedError::toSafeTrace
+     * to a more human-readable string for a failed test.
+     *
+     * @param array $trace
+     * @return string
+     */
+    private function formatSafeTrace(array $trace): string
+    {
+        return implode("\n",
+            array_map(function (array $row, int $index): string {
+                $line = "#$index ";
+                $line .= $row['file'] ?? '';
+                if (isset($row['line'])) {
+                    $line .= "({$row['line']}) :";
+                }
+                if (isset($row['call'])) {
+                    $line .= ' '.$row['call'];
+                }
+                if (isset($row['function'])) {
+                    $line .= ' '.$row['function'];
+                }
+
+                return $line;
+            }, $trace, array_keys($trace)));
     }
 }
