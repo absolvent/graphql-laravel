@@ -31,6 +31,8 @@ matrix:
     - php: '7.2'
       env: LARAVEL='5.8.*'
     - php: '7.2'
+      env: LARAVEL='6.0.*'
+    - php: '7.2'
       env: LARAVEL='dev-master'
     - php: '7.3'
       env: LARAVEL='5.5.*'
@@ -41,14 +43,24 @@ matrix:
     - php: '7.3'
       env: LARAVEL='5.8.*' STATIC_ANALYSER=1 INSTALL_LARAVEL=1 INSTALL_LUMEN=1
     - php: '7.3'
+      env: LARAVEL='6.0.*'
+    - php: '7.3'
       env: LARAVEL='dev-master'
     - php: '7.4snapshot'
       env: LARAVEL='5.8.*'
+    - php: '7.4snapshot'
+      env: LARAVEL='6.0.*'
     - php: '7.4snapshot'
       env: LARAVEL='dev-master'
   allow_failures:
+    - php: '7.2'
+      env: LARAVEL='dev-master'
+    - php: '7.3'
+      env: LARAVEL='dev-master'
     - php: '7.4snapshot'
       env: LARAVEL='5.8.*'
+    - php: '7.4snapshot'
+      env: LARAVEL='6.0.*'
     - php: '7.4snapshot'
       env: LARAVEL='dev-master'
 
@@ -58,6 +70,10 @@ before_script:
 install:
   - composer require "illuminate/support:${LARAVEL}" --no-interaction --no-update
   - |
+    # 6.0 requires lifting other requirements too
+    if [[ $LARAVEL = '6.0.*' ]]; then
+      composer require "illuminate/contracts:${LARAVEL}" --no-interaction --no-update
+    fi
     # dev-master requires liftig other requirements too
     if [[ $LARAVEL = 'dev-master' ]]; then
       composer require "illuminate/contracts:${LARAVEL}" --no-interaction --no-update

@@ -172,7 +172,7 @@ class SelectFields
                             $foreignKey = $relation->getQualifiedForeignKeyName();
                         }
 
-                        $foreignKey = $parentTable ? ($parentTable.'.'.preg_replace('/^'.preg_quote($parentTable).'\./', '', $foreignKey)) : $foreignKey;
+                        $foreignKey = $parentTable ? ($parentTable.'.'.preg_replace('/^'.preg_quote($parentTable, '/').'\./', '', $foreignKey)) : $foreignKey;
 
                         if (is_a($relation, MorphTo::class)) {
                             $foreignKeyType = $relation->getMorphType();
@@ -215,6 +215,7 @@ class SelectFields
                     $key = isset($fieldObject->config['alias'])
                         ? $fieldObject->config['alias']
                         : $key;
+                    $key = $key instanceof Closure ? $key() : $key;
 
                     self::addFieldToSelect($key, $select, $parentTable, false);
 
