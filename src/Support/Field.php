@@ -194,8 +194,10 @@ abstract class Field
 
             // Add the 'selects and relations' feature as 5th arg
             if (isset($arguments[3])) {
-                $arguments[] = function () use ($arguments): SelectFields {
-                    return new SelectFields($arguments[3], $this->type(), $arguments[1]);
+                $arguments[] = function (int $depth = null) use ($arguments): SelectFields {
+                    $ctx = $arguments[2] ?? null;
+
+                    return new SelectFields($arguments[3], $this->type(), $arguments[1], $depth ?? 5, $ctx);
                 };
             }
 
